@@ -1,0 +1,146 @@
+services:
+  tt-auth:
+    build:
+      context: ../tt-auth
+    image: ghcr.io/swisi/tt-auth:latest
+    container_name: tt-auth
+    ports:
+      - "${AUTH_PORT:-8086}:5000"
+    environment:
+      SECRET_KEY: ${AUTH_SECRET_KEY}
+      SQLALCHEMY_DATABASE_URI: ${AUTH_DATABASE_URL}
+      JWT_EXPIRY_HOURS: ${JWT_EXPIRY_HOURS:-8}
+      JWT_COOKIE_DOMAIN: ${JWT_COOKIE_DOMAIN:-localhost}
+      JWT_COOKIE_SECURE: ${JWT_COOKIE_SECURE:-false}
+      LOG_LEVEL: INFO
+      AUTO_CREATE_DB: "true"
+      CREATE_DEFAULT_USERS: "true"
+      CREATE_DEFAULT_SERVICES: "true"
+      DEFAULT_ADMIN_USERNAME: ${DEFAULT_ADMIN_USERNAME:-admin}
+      DEFAULT_ADMIN_PASSWORD: ${DEFAULT_ADMIN_PASSWORD}
+      DEFAULT_AGENDA_URL: ${DEFAULT_AGENDA_URL:-http://tt-agenda:5000}
+      DEFAULT_ANALYTICS_URL: ${DEFAULT_ANALYTICS_URL:-http://tt-analytics:5000}
+      SSO_SHARED_SECRET: ${SSO_SHARED_SECRET}
+      SSO_TOKEN_EXPIRY_SECONDS: ${SSO_TOKEN_EXPIRY_SECONDS:-60}
+      RATELIMIT_STORAGE_URI: memory://
+      TZ: ${TZ:-Europe/Zurich}
+    depends_on:
+      postgres-auth:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - tigers-internal
+
+  tt-agenda:
+    build:
+      context: ../tt-agenda
+    image: ghcr.io/swisi/tt-agenda:latest
+    container_name: tt-agenda
+    ports:
+      - "${AGENDA_PORT:-8085}:5000"
+    environment:
+      SECRET_KEY: ${AGENDA_SECRET_KEY}
+      SQLALCHEMY_DATABASE_URI: ${AGENDA_DATABASE_URL}
+      SSO_SHARED_SECRET: ${SSO_SHARED_SECRET}
+      SSO_EXPECTED_AUDIENCE: ${AGENDA_SSO_EXPECTED_AUDIENCE:-tt-agenda}
+      SSO_AUTO_PROVISION_USERS: ${AGENDA_SSO_AUTO_PROVISION_USERS:-true}
+      SSO_SYNC_ROLE: ${AGENDA_SSO_SYNC_ROLE:-true}
+      WEBHOOK_ENABLED: ${AGENDA_WEBHOOK_ENABLED:-false}
+      WEBHOOK_URL: ${AGENDA_WEBHOOK_URL}
+      LOG_LEVEL: INFO
+      TZ: ${TZ:-Europe/Zurich}
+    depends_on:
+      postgres-agenda:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - tigers-internal
+
+  tt-analytics:
+    image: ghcr.io/swisi/tt-analytics:latest
+    container_name: tt-analytics
+    profiles:
+      - analytics
+    ports:
+      - "${ANALYTICS_PORT:-8087}:5000"
+    environment:
+      SECRET_KEY: ${ANALYTICS_SECRET_KEY}
+      SQLALCHEMY_DATABASE_URI: ${ANALYTICS_DATABASE_URL}
+      SSO_SHARED_SECRET: ${SSO_SHARED_SECRET}
+      SSO_EXPECTED_AUDIENCE: ${ANALYTICS_SSO_EXPECTED_AUDIENCE:-tt-analytics}
+      LOG_LEVEL: INFO
+      TZ: ${TZ:-Europe/Zurich}
+    depends_on:
+      postgres-analytics:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - tigers-internal
+
+  postgres-auth:
+    image: postgres:16
+    container_name: postgres-auth
+    environment:
+      POSTGRES_DB: ${POSTGRES_AUTH_DB:-tt_auth}
+      POSTGRES_USER: ${POSTGRES_AUTH_USER:-tt_auth}
+      POSTGRES_PASSWORD: ${POSTGRES_AUTH_PASSWORD:-tt_auth_password}
+      TZ: ${TZ:-Europe/Zurich}
+    volumes:
+      - postgres-auth-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_AUTH_USER:-tt_auth} -d ${POSTGRES_AUTH_DB:-tt_auth}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    networks:
+      - tigers-internal
+
+  postgres-agenda:
+    image: postgres:16
+    container_name: postgres-agenda
+    environment:
+      POSTGRES_DB: ${POSTGRES_AGENDA_DB:-tt_agenda}
+      POSTGRES_USER: ${POSTGRES_AGENDA_USER:-tt_agenda}
+      POSTGRES_PASSWORD: ${POSTGRES_AGENDA_PASSWORD:-tt_agenda_password}
+      TZ: ${TZ:-Europe/Zurich}
+    volumes:
+      - postgres-agenda-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_AGENDA_USER:-tt_agenda} -d ${POSTGRES_AGENDA_DB:-tt_agenda}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    networks:
+      - tigers-internal
+
+  postgres-analytics:
+    image: postgres:16
+    container_name: postgres-analytics
+    profiles:
+      - analytics
+    environment:
+      POSTGRES_DB: ${POSTGRES_ANALYTICS_DB:-tt_analytics}
+      POSTGRES_USER: ${POSTGRES_ANALYTICS_USER:-tt_analytics}
+      POSTGRES_PASSWORD: ${POSTGRES_ANALYTICS_PASSWORD:-tt_analytics_password}
+      TZ: ${TZ:-Europe/Zurich}
+    volumes:
+      - postgres-analytics-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_ANALYTICS_USER:-tt_analytics} -d ${POSTGRES_ANALYTICS_DB:-tt_analytics}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    networks:
+      - tigers-internal
+
+networks:
+  tigers-internal:
+    driver: bridge
+
+volumes:
+  postgres-auth-data:
+  postgres-agenda-data:
+  postgres-analytics-data:
