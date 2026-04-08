@@ -27,7 +27,9 @@ Die fachlichen Anwendungen bleiben in separaten Repositories:
 - `docker-compose.yml` zentraler Compose-Stack
 - `.env.example` Beispiel fuer benoetigte Umgebungsvariablen
 - `docs/architecture.md` Zielarchitektur
+- `docs/stack-architecture.md` detaillierte Plattform-Architektur
 - `docs/operations.md` Betriebs- und Deployment-Hinweise
+- `docs/data-migration.md` Datenmigration von SQLite nach PostgreSQL
 
 ## Schnellstart
 

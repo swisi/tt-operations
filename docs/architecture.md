@@ -19,13 +19,15 @@
 - je Service eigene Postgres-Datenbank
 - spaeter optional Reverse Proxy, Redis, Monitoring
 
+Die ausfuehrliche Version liegt in `docs/stack-architecture.md`.
+
 ## Datenbankstrategie
 
 Jeder Service bekommt seine eigene Datenbank:
 
-- `postgres-auth`
-- `postgres-agenda`
-- `postgres-analytics`
+- `tt-postgres-auth`
+- `tt-postgres-agenda`
+- `tt-postgres-analytics`
 
 Dadurch bleiben Datenmodell, Migrationen und Deployments entkoppelt.
 

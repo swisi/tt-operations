@@ -25,7 +25,7 @@ services:
       RATELIMIT_STORAGE_URI: memory://
       TZ: ${TZ:-Europe/Zurich}
     depends_on:
-      postgres-auth:
+      tt-postgres-auth:
         condition: service_healthy
     restart: unless-stopped
     networks:
@@ -41,6 +41,7 @@ services:
     environment:
       SECRET_KEY: ${AGENDA_SECRET_KEY}
       SQLALCHEMY_DATABASE_URI: ${AGENDA_DATABASE_URL}
+      AUTH_BASE_URL: ${AGENDA_AUTH_BASE_URL:-http://localhost:8086}
       SSO_SHARED_SECRET: ${SSO_SHARED_SECRET}
       SSO_EXPECTED_AUDIENCE: ${AGENDA_SSO_EXPECTED_AUDIENCE:-tt-agenda}
       SSO_AUTO_PROVISION_USERS: ${AGENDA_SSO_AUTO_PROVISION_USERS:-true}
@@ -50,7 +51,7 @@ services:
       LOG_LEVEL: INFO
       TZ: ${TZ:-Europe/Zurich}
     depends_on:
-      postgres-agenda:
+      tt-postgres-agenda:
         condition: service_healthy
     restart: unless-stopped
     networks:
@@ -71,15 +72,15 @@ services:
       LOG_LEVEL: INFO
       TZ: ${TZ:-Europe/Zurich}
     depends_on:
-      postgres-analytics:
+      tt-postgres-analytics:
         condition: service_healthy
     restart: unless-stopped
     networks:
       - tigers-internal
 
-  postgres-auth:
+  tt-postgres-auth:
     image: postgres:16
-    container_name: postgres-auth
+    container_name: tt-postgres-auth
     environment:
       POSTGRES_DB: ${POSTGRES_AUTH_DB:-tt_auth}
       POSTGRES_USER: ${POSTGRES_AUTH_USER:-tt_auth}
@@ -96,9 +97,9 @@ services:
     networks:
       - tigers-internal
 
-  postgres-agenda:
+  tt-postgres-agenda:
     image: postgres:16
-    container_name: postgres-agenda
+    container_name: tt-postgres-agenda
     environment:
       POSTGRES_DB: ${POSTGRES_AGENDA_DB:-tt_agenda}
       POSTGRES_USER: ${POSTGRES_AGENDA_USER:-tt_agenda}
@@ -115,9 +116,9 @@ services:
     networks:
       - tigers-internal
 
-  postgres-analytics:
+  tt-postgres-analytics:
     image: postgres:16
-    container_name: postgres-analytics
+    container_name: tt-postgres-analytics
     profiles:
       - analytics
     environment:
