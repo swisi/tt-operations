@@ -167,6 +167,7 @@ Ein gemeinsamer Compose-Stack sollte mindestens enthalten:
 ### Netzwerk
 
 - internes Docker-Netz `tigers-internal`
+- optional zusaetzliches Edge-Netz fuer Traefik und `cloudflared`
 - nur Reverse Proxy exponiert Ports nach aussen
 - interne Services sprechen ueber Compose-Service-Namen, z. B. `http://tt-agenda:5000`
 
@@ -185,6 +186,28 @@ Falls alles unter einer Domain laufen soll:
 - `example.ch/analytics`
 
 Subdomains sind fuer Cookies, Routing und Trennung meist sauberer.
+
+### Empfohlene Umgebungstrennung
+
+- `beta` als separates Compose-Deployment auf dem Entwickler-Laptop
+- `prod` als separates Compose-Deployment auf dem Proxmox-Host
+- unterschiedliche `COMPOSE_PROJECT_NAME`-Werte verhindern Namens- und Netzwerk-Kollisionen
+- unterschiedliche Tunnel-Tokens und Hostnames verhindern Vermischung zwischen Test und Produktion
+
+### Reverse Proxy hinter Cloudflare
+
+Die empfohlene Kette lautet:
+
+- Internet
+- Cloudflare
+- `cloudflared`
+- Traefik
+- `tt-auth`, `tt-agenda`, `tt-analytics`
+
+Das ist nicht doppelt, weil Cloudflare und Traefik unterschiedliche Rollen haben:
+
+- Cloudflare: DNS, TLS, WAF, Tunnel, Edge-Zugang
+- Traefik: internes Hostname-Routing, Docker-Discovery, Service-Ingress innerhalb des Stacks
 
 ## Session- und Token-Strategie
 

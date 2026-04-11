@@ -11,7 +11,7 @@ Voraussetzungen:
 
 ```bash
 cp .env.example .env
-docker compose up -d --build
+docker compose --profile analytics -f docker-compose.yml -f docker-compose.local.yml up -d --build
 ```
 
 ## Erwartete Struktur
@@ -45,15 +45,53 @@ Empfohlener Weg:
 - zusaetzlich optional volumenbasierte Snapshots auf Host- oder Storage-Ebene
 - Restore nicht in der App, sondern ueber `psql` oder `pg_restore`
 
+## Deployment-Modi
+
+### Lokale Direktnutzung
+
+Fuer lokale Entwicklung ohne Reverse Proxy:
+
+```bash
+cp .env.example .env
+docker compose --profile analytics -f docker-compose.yml -f docker-compose.local.yml up -d --build
+```
+
+### Beta via Traefik und Cloudflare Tunnel
+
+Beta ist fuer den Entwickler-Laptop oder einen dedizierten Test-Host gedacht:
+
+```bash
+cp .env.beta.example .env
+docker compose --profile analytics -f docker-compose.yml -f docker-compose.edge.yml up -d --build
+```
+
+### Produktion via Traefik und Cloudflare Tunnel
+
+Produktion ist fuer den separaten Proxmox-Host gedacht:
+
+```bash
+cp .env.prod.example .env
+docker compose --profile analytics -f docker-compose.yml -f docker-compose.edge.yml up -d --build
+```
+
+Die Umgebungen werden ueber unterschiedliche Werte fuer `COMPOSE_PROJECT_NAME`, Tunnel-Token, Domains und Secrets sauber getrennt.
+
 ## Aktivierung von Analytics
 
 ```bash
-docker compose --profile analytics up -d
+docker compose --profile analytics -f docker-compose.yml -f docker-compose.local.yml up -d
 ```
 
 ## Naechste Plattform-Schritte
 
-- Reverse Proxy mit Traefik oder Nginx hinzufuegen
 - Redis fuer Rate Limiting und Jobs hinzufuegen
 - produktionsreife Secret-Verwaltung einfuehren
 - CI/CD fuer Compose-Validierung und Deployment ergaenzen
+
+## Reverse Proxy und Tunnel
+
+- Cloudflare bleibt der externe Edge-Layer fuer DNS, TLS, WAF und Tunnel-Terminierung.
+- `cloudflared` bringt den Traffic in den Docker-Stack.
+- Traefik bleibt intern sinnvoll und ist nicht doppelt: es uebernimmt Hostname-Routing, Docker-Service-Discovery und Ingress-Logik zwischen `tt-auth`, `tt-agenda` und `tt-analytics`.
+- Pfadbasiertes Routing wurde bewusst nicht als Standardmodell gewaehlt, weil die bestehenden Apps sauberer ueber eigene Subdomains betrieben werden koennen.
+- Eine konkrete Schritt-fuer-Schritt-Anleitung fuer Beta und Produktion steht in `docs/cloudflare-tunnel.md`.

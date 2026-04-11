@@ -3,9 +3,6 @@ services:
     build:
       context: ../tt-auth
     image: ghcr.io/swisi/tt-auth:latest
-    container_name: tt-auth
-    ports:
-      - "${AUTH_PORT:-8086}:5000"
     environment:
       SECRET_KEY: ${AUTH_SECRET_KEY}
       SQLALCHEMY_DATABASE_URI: ${AUTH_DATABASE_URL}
@@ -43,9 +40,6 @@ services:
     build:
       context: ../tt-agenda
     image: ghcr.io/swisi/tt-agenda:latest
-    container_name: tt-agenda
-    ports:
-      - "${AGENDA_PORT:-8085}:5000"
     environment:
       SECRET_KEY: ${AGENDA_SECRET_KEY}
       SQLALCHEMY_DATABASE_URI: ${AGENDA_DATABASE_URL}
@@ -78,11 +72,8 @@ services:
     build:
       context: ../tt-analytics
     image: ghcr.io/swisi/tt-analytics:latest
-    container_name: tt-analytics
     profiles:
       - analytics
-    ports:
-      - "${ANALYTICS_PORT:-8087}:5000"
     environment:
       SECRET_KEY: ${ANALYTICS_SECRET_KEY}
       SQLALCHEMY_DATABASE_URI: ${ANALYTICS_DATABASE_URL}
@@ -123,7 +114,6 @@ services:
 
   tt-redis:
     image: redis:7-alpine
-    container_name: tt-redis
     command: redis-server --save 60 1 --loglevel warning
     volumes:
       - redis-data:/data
@@ -138,7 +128,6 @@ services:
 
   tt-postgres-auth:
     image: postgres:16
-    container_name: tt-postgres-auth
     environment:
       POSTGRES_DB: ${POSTGRES_AUTH_DB:-tt_auth}
       POSTGRES_USER: ${POSTGRES_AUTH_USER:-tt_auth}
@@ -157,7 +146,6 @@ services:
 
   tt-postgres-agenda:
     image: postgres:16
-    container_name: tt-postgres-agenda
     environment:
       POSTGRES_DB: ${POSTGRES_AGENDA_DB:-tt_agenda}
       POSTGRES_USER: ${POSTGRES_AGENDA_USER:-tt_agenda}
@@ -176,7 +164,6 @@ services:
 
   tt-postgres-analytics:
     image: postgres:16
-    container_name: tt-postgres-analytics
     profiles:
       - analytics
     environment:

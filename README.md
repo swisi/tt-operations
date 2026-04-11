@@ -29,6 +29,7 @@ Die fachlichen Anwendungen bleiben in separaten Repositories:
 - `docs/architecture.md` Zielarchitektur
 - `docs/stack-architecture.md` detaillierte Plattform-Architektur
 - `docs/operations.md` Betriebs- und Deployment-Hinweise
+- `docs/cloudflare-tunnel.md` Tunnel- und Hostname-Setup fuer Beta und Produktion
 - `docs/data-migration.md` Datenmigration von SQLite nach PostgreSQL
 
 ## Schnellstart
@@ -36,14 +37,36 @@ Die fachlichen Anwendungen bleiben in separaten Repositories:
 1. Repositories fuer `tt-auth`, `tt-agenda` und spaeter `tt-analytics` lokal neben dieses Repo legen oder als externe Images verwenden.
 2. `.env.example` nach `.env` kopieren und Werte setzen.
 3. Pfade oder Image-Namen im `docker-compose.yml` anpassen.
-4. Stack starten:
+4. Lokalen Direktzugriff starten:
 
 ```bash
-docker compose up -d --build
+docker compose --profile analytics -f docker-compose.yml -f docker-compose.local.yml up -d --build
 ```
+
+## Deployment-Modi
+
+- `docker-compose.yml`: gemeinsamer Basis-Stack ohne oeffentliche App-Ports
+- `docker-compose.local.yml`: lokaler Direktzugriff ueber `localhost:8085/8086/8087`
+- `docker-compose.edge.yml`: Ingress ueber Traefik plus `cloudflared`
+
+### Beta auf dem Entwickler-Laptop
+
+```bash
+cp .env.beta.example .env
+docker compose --profile analytics -f docker-compose.yml -f docker-compose.edge.yml up -d --build
+```
+
+### Produktion auf Proxmox
+
+```bash
+cp .env.prod.example .env
+docker compose --profile analytics -f docker-compose.yml -f docker-compose.edge.yml up -d --build
+```
+
+Beta und Produktion laufen als getrennte Deployments ueber unterschiedliche `COMPOSE_PROJECT_NAME`-, Hostname- und Tunnel-Konfigurationen.
 
 ## Hinweise
 
-- Die Compose-Datei verwendet fuer `tt-auth` und `tt-agenda` zunaechst relative Build-Pfade `../tt-auth` und `../tt-agenda`.
-- `tt-analytics` ist als Platzhalter vorbereitet.
-- Fuer Produktion sollten HTTPS, Reverse Proxy, Redis und vernuenftiges Secret-Handling ergaenzt werden.
+- Die Compose-Dateien verwenden fuer `tt-auth`, `tt-agenda` und `tt-analytics` relative Build-Pfade in benachbarte Repositories.
+- Feste `container_name`-Eintraege wurden bewusst entfernt, damit Beta und Produktion parallel als getrennte Compose-Projekte betrieben werden koennen.
+- Fuer Edge-Betrieb uebernimmt Cloudflare den externen Zugang, waehrend Traefik intern per Hostname an die Services weiterleitet.

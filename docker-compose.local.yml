@@ -1,0 +1,12 @@
+services:
+  tt-auth:
+    ports:
+      - "${AUTH_PORT:-8085}:5000"
+
+  tt-agenda:
+    ports:
+      - "${AGENDA_PORT:-8086}:5000"
+
+  tt-analytics:
+    ports:
+      - "${ANALYTICS_PORT:-8087}:5000"
