@@ -72,8 +72,6 @@ services:
     build:
       context: ../tt-analytics
     image: ghcr.io/swisi/tt-analytics:latest
-    profiles:
-      - analytics
     environment:
       SECRET_KEY: ${ANALYTICS_SECRET_KEY}
       SQLALCHEMY_DATABASE_URI: ${ANALYTICS_DATABASE_URL}
@@ -164,8 +162,6 @@ services:
 
   tt-postgres-analytics:
     image: postgres:16
-    profiles:
-      - analytics
     environment:
       POSTGRES_DB: ${POSTGRES_ANALYTICS_DB:-tt_analytics}
       POSTGRES_USER: ${POSTGRES_ANALYTICS_USER:-tt_analytics}

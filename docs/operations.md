@@ -11,7 +11,7 @@ Voraussetzungen:
 
 ```bash
 cp .env.example .env
-docker compose --profile analytics -f docker-compose.yml -f docker-compose.local.yml up -d --build
+docker compose -f docker-compose.yml -f docker-compose.edge.yml up -d --build
 ```
 
 ## Erwartete Struktur
@@ -27,7 +27,7 @@ tigers/
 
 - `tt-auth` und `tt-agenda` muessen auf `SQLALCHEMY_DATABASE_URI` aus der Umgebung reagieren.
 - `tt-agenda` enthaelt aktuell noch SQLite-spezifische Backup-Logik und muss fuer Postgres weiter angepasst werden.
-- `tt-analytics` ist im Compose-Stack als Platzhalter vorbereitet und wird ueber das Profil `analytics` aktiviert.
+- `tt-analytics` ist fester Bestandteil des Standard-Stacks.
 
 ## Persistenz und Backups
 
@@ -47,22 +47,22 @@ Empfohlener Weg:
 
 ## Deployment-Modi
 
-### Lokale Direktnutzung
+### Beta via Traefik und Cloudflare Tunnel
 
-Fuer lokale Entwicklung ohne Reverse Proxy:
+Beta ist der empfohlene Standardfall fuer den Entwickler-Laptop, wenn der Stack auch vom Handy oder von anderen Geraeten erreichbar sein soll:
 
 ```bash
 cp .env.example .env
-docker compose --profile analytics -f docker-compose.yml -f docker-compose.local.yml up -d --build
+docker compose -f docker-compose.yml -f docker-compose.edge.yml up -d --build
 ```
 
-### Beta via Traefik und Cloudflare Tunnel
+### Lokale Direktnutzung ohne Tunnel
 
-Beta ist fuer den Entwickler-Laptop oder einen dedizierten Test-Host gedacht:
+Nur falls wirklich kein externer Zugriff noetig ist:
 
 ```bash
-cp .env.beta.example .env
-docker compose --profile analytics -f docker-compose.yml -f docker-compose.edge.yml up -d --build
+cp .env.local.example .env
+docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
 ```
 
 ### Produktion via Traefik und Cloudflare Tunnel
@@ -71,15 +71,15 @@ Produktion ist fuer den separaten Proxmox-Host gedacht:
 
 ```bash
 cp .env.prod.example .env
-docker compose --profile analytics -f docker-compose.yml -f docker-compose.edge.yml up -d --build
+docker compose -f docker-compose.yml -f docker-compose.edge.yml up -d --build
 ```
 
 Die Umgebungen werden ueber unterschiedliche Werte fuer `COMPOSE_PROJECT_NAME`, Tunnel-Token, Domains und Secrets sauber getrennt.
 
-## Aktivierung von Analytics
+## Stack-Start
 
 ```bash
-docker compose --profile analytics -f docker-compose.yml -f docker-compose.local.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.edge.yml up -d
 ```
 
 ## Naechste Plattform-Schritte

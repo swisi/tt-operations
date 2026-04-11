@@ -76,13 +76,13 @@ Wichtig:
 
 ## Beta auf dem Entwickler-Laptop
 
-1. `.env.beta.example` nach `.env` kopieren.
+1. `.env.example` nach `.env` kopieren.
 2. `CLOUDFLARE_TUNNEL_TOKEN` fuer den Beta-Tunnel eintragen.
 3. Falls noetig lokale Secrets und Passwoerter ersetzen.
 4. Stack starten:
 
 ```bash
-docker compose --profile analytics -f docker-compose.yml -f docker-compose.edge.yml up -d --build
+docker compose -f docker-compose.yml -f docker-compose.edge.yml up -d --build
 ```
 
 5. In Cloudflare pruefen, dass die Beta-Hostnames auf den Beta-Tunnel zeigen.
@@ -103,7 +103,7 @@ https://analytics-beta.thun-tigers.net
 5. Stack starten:
 
 ```bash
-docker compose --profile analytics -f docker-compose.yml -f docker-compose.edge.yml up -d --build
+docker compose -f docker-compose.yml -f docker-compose.edge.yml up -d --build
 ```
 
 6. In Cloudflare pruefen, dass die Produktiv-Hostnames auf den Produktions-Tunnel zeigen.
@@ -121,12 +121,12 @@ Auf deinem aktuellen Entwickler-Laptop brauchst du fuer den extern erreichbaren 
 
 Das heisst konkret:
 
-- `cp .env.beta.example .env`
+- `cp .env.example .env`
 - echten Beta-Tunnel-Token eintragen
 - Beta-Domains in Cloudflare auf den Beta-Tunnel legen
 - Edge-Compose mit Traefik und `cloudflared` starten
 
-Wenn du dagegen nur lokal ohne Cloudflare entwickeln willst, bleibst du bei `.env.example` plus `docker-compose.local.yml`.
+Wenn du dagegen ausnahmsweise nur lokal ohne Cloudflare entwickeln willst, nimmst du `.env.local.example` plus `docker-compose.local.yml`.
 
 ## Was spaeter auf Proxmox gebraucht wird
 
