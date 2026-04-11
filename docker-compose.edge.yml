@@ -3,8 +3,7 @@ services:
     image: traefik:v3.0
     command:
       - --api.dashboard=true
-      - --providers.docker=true
-      - --providers.docker.exposedbydefault=false
+      - --providers.file.filename=/etc/traefik/dynamic.yml
       - --entrypoints.web.address=:80
       - --ping=true
       - --accesslog=true
@@ -12,7 +11,7 @@ services:
     ports:
       - "${TRAEFIK_HTTP_PORT:-80}:80"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
     restart: unless-stopped
     networks:
       - tigers-internal
@@ -24,7 +23,7 @@ services:
       retries: 3
 
   cloudflared:
-    image: cloudflare/cloudflared:2026.4.0
+    image: cloudflare/cloudflared:latest
     command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
     environment:
       TUNNEL_METRICS: 0.0.0.0:2000
@@ -36,32 +35,14 @@ services:
       - tigers-edge
 
   tt-auth:
-    labels:
-      traefik.enable: "true"
-      traefik.docker.network: ${TRAEFIK_DOCKER_NETWORK:-tigers-edge}
-      traefik.http.routers.tt-auth.rule: Host(`${AUTH_HOST}`)
-      traefik.http.routers.tt-auth.entrypoints: web
-      traefik.http.services.tt-auth.loadbalancer.server.port: "5000"
     networks:
       - tigers-edge
 
   tt-agenda:
-    labels:
-      traefik.enable: "true"
-      traefik.docker.network: ${TRAEFIK_DOCKER_NETWORK:-tigers-edge}
-      traefik.http.routers.tt-agenda.rule: Host(`${AGENDA_HOST}`)
-      traefik.http.routers.tt-agenda.entrypoints: web
-      traefik.http.services.tt-agenda.loadbalancer.server.port: "5000"
     networks:
       - tigers-edge
 
   tt-analytics:
-    labels:
-      traefik.enable: "true"
-      traefik.docker.network: ${TRAEFIK_DOCKER_NETWORK:-tigers-edge}
-      traefik.http.routers.tt-analytics.rule: Host(`${ANALYTICS_HOST}`)
-      traefik.http.routers.tt-analytics.entrypoints: web
-      traefik.http.services.tt-analytics.loadbalancer.server.port: "5000"
     networks:
       - tigers-edge
 

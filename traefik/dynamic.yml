@@ -1,0 +1,35 @@
+http:
+  routers:
+    tt-auth:
+      rule: Host(`auth-beta.thun-tigers.net`) || Host(`auth.thun-tigers.net`)
+      entryPoints:
+        - web
+      service: tt-auth
+
+    tt-agenda:
+      rule: Host(`agenda-beta.thun-tigers.net`) || Host(`agenda.thun-tigers.net`)
+      entryPoints:
+        - web
+      service: tt-agenda
+
+    tt-analytics:
+      rule: Host(`analytics-beta.thun-tigers.net`) || Host(`analytics.thun-tigers.net`)
+      entryPoints:
+        - web
+      service: tt-analytics
+
+  services:
+    tt-auth:
+      loadBalancer:
+        servers:
+          - url: http://tt-auth:5000
+
+    tt-agenda:
+      loadBalancer:
+        servers:
+          - url: http://tt-agenda:5000
+
+    tt-analytics:
+      loadBalancer:
+        servers:
+          - url: http://tt-analytics:5000
